@@ -1,0 +1,3 @@
+govendor init
+govendor add +external
+govendor update +external

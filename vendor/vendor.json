@@ -1,0 +1,78 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "JiTaaqMJ0WfwRKycs3y6rDKZgAk=",
+			"path": "github.com/Sirupsen/logrus",
+			"revision": "3ec0642a7fb6488f65b06f9040adc67e3990296a",
+			"revisionTime": "2016-08-29T20:23:21Z"
+		},
+		{
+			"checksumSHA1": "lEzkjwyqZ1e8Zv/k1t8OW0e+YVQ=",
+			"path": "github.com/robfig/cron",
+			"revision": "9585fd555638e77bba25f25db5c44b41f264aeb7",
+			"revisionTime": "2016-09-27T16:42:31Z"
+		},
+		{
+			"checksumSHA1": "rarBGmCvBfMrKRUQwojs9ov6v4E=",
+			"path": "github.com/surge/glog",
+			"revision": "2578deb2b95c665e6b1ebabf304ce2085c9e1985",
+			"revisionTime": "2014-11-08T05:11:40Z"
+		},
+		{
+			"checksumSHA1": "8t6OJ6pskm+sKgeQEmiZB0fnXLw=",
+			"path": "github.com/surgemq/message",
+			"revision": "2b7ca1ac6121420133f8df6b94a976d5ca35339a",
+			"revisionTime": "2015-10-17T23:33:15Z"
+		},
+		{
+			"checksumSHA1": "AMOXl6uXrBjgzizlfXcXAkcCm/E=",
+			"path": "github.com/surgemq/surgemq/auth",
+			"revision": "c88a02e0d607d081fc28d36513dc01bbf83b1b37",
+			"revisionTime": "2016-02-20T02:01:21Z"
+		},
+		{
+			"checksumSHA1": "8h2ntoJPsQk93y2+X7zgYLo7Pi0=",
+			"path": "github.com/surgemq/surgemq/service",
+			"revision": "c88a02e0d607d081fc28d36513dc01bbf83b1b37",
+			"revisionTime": "2016-02-20T02:01:21Z"
+		},
+		{
+			"checksumSHA1": "66B6d6VJG2umtrs9PsD5eboLPKw=",
+			"path": "github.com/surgemq/surgemq/sessions",
+			"revision": "c88a02e0d607d081fc28d36513dc01bbf83b1b37",
+			"revisionTime": "2016-02-20T02:01:21Z"
+		},
+		{
+			"checksumSHA1": "N3i1LJkG5Pj7dPblsndx+8VD76M=",
+			"path": "github.com/surgemq/surgemq/topics",
+			"revision": "c88a02e0d607d081fc28d36513dc01bbf83b1b37",
+			"revisionTime": "2016-02-20T02:01:21Z"
+		},
+		{
+			"checksumSHA1": "z0TCcB+cPeQX8+jn7HvUDeoMDS8=",
+			"path": "github.com/urfave/cli",
+			"revision": "3eb41f1bb122ac7535cc7b32db6b78b541879726",
+			"revisionTime": "2016-10-30T01:45:05Z"
+		},
+		{
+			"checksumSHA1": "likOl7O0BJntqagR050kkOBuY4o=",
+			"path": "golang.org/x/net/websocket",
+			"revision": "9313baa13d9262e49d07b20ed57dceafcd7240cc",
+			"revisionTime": "2016-09-07T15:25:26Z"
+		},
+		{
+			"checksumSHA1": "lLFyv1lFFwDzmujqR9/hBV/pdQM=",
+			"path": "golang.org/x/sys/unix",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "DcPAKJLNwTx9nzMDLuIjhM7Tk2M=",
+			"path": "gopkg.in/ini.v1",
+			"revision": "6e4869b434bd001f6983749881c7ead3545887d8",
+			"revisionTime": "2016-08-27T06:11:18Z"
+		}
+	],
+	"rootPath": "surgemq"
+}
