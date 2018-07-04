@@ -3,6 +3,8 @@ High-Performance MQTT Server and  MQTT cluster
 
 **This project was developed based on surgermq.(https://github.com/surgemq/surgemq)**
 
+**surgemq is not support cluster.So I just did a cluster on his basis. **
+
 ### MQTT
 
 According to the [MQTT spec](http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/mqtt-v3.1.1.html):
