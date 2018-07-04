@@ -24,8 +24,8 @@ import (
 	"strings"
 	"syscall"
 
-	"supermq/applog"
-	"supermq/config"
+	"github.com/578157900/supermq/applog"
+	"github.com/578157900/supermq/config"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/surgemq/surgemq/service"
