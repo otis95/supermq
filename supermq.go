@@ -130,6 +130,7 @@ func run(c *cli.Context) error {
 		err = svr.ListenAndServe(conf.MQTTServer)
 		if err != nil {
 			log.Errorf("surgemq/main TCP: %v", err)
+			return
 		}
 	}()
 
