@@ -24,7 +24,7 @@ import (
 
 	"supermq/message"
 
-	"supermq/supermq/sessions"
+	"supermq/internal/sessions"
 
 	glog "github.com/Sirupsen/logrus"
 )

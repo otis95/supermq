@@ -23,9 +23,9 @@ import (
 
 	"supermq/message"
 
-	"supermq/supermq/sessions"
+	"supermq/internal/sessions"
 
-	"supermq/supermq/topics"
+	"supermq/internal/topics"
 )
 
 const (
