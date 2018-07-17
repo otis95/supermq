@@ -21,11 +21,11 @@ import (
 	"sync/atomic"
 	"time"
 
-	"supermq/message"
+	"github.com/578157900/supermq/message"
 
-	"supermq/internal/sessions"
+	"github.com/578157900/supermq/internal/sessions"
 
-	"supermq/internal/topics"
+	"github.com/578157900/supermq/internal/topics"
 )
 
 const (

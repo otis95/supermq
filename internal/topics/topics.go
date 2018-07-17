@@ -26,7 +26,7 @@ import (
 	"errors"
 	"fmt"
 
-	"supermq/message"
+	"github.com/578157900/supermq/message"
 )
 
 const (

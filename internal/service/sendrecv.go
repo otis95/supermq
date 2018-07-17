@@ -21,7 +21,7 @@ import (
 	"net"
 	"time"
 
-	"supermq/message"
+	"github.com/578157900/supermq/message"
 
 	glog "github.com/Sirupsen/logrus"
 )

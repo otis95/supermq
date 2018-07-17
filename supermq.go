@@ -27,7 +27,7 @@ import (
 	"github.com/578157900/supermq/applog"
 	"github.com/578157900/supermq/config"
 
-	"supermq/internal/service"
+	"github.com/578157900/supermq/internal/service"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/urfave/cli"

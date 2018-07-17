@@ -22,9 +22,9 @@ import (
 	"net/url"
 	"reflect"
 
-	"supermq/message"
+	"github.com/578157900/supermq/message"
 
-	"supermq/internal/sessions"
+	"github.com/578157900/supermq/internal/sessions"
 
 	glog "github.com/Sirupsen/logrus"
 )

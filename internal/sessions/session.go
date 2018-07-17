@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"sync"
 
-	"supermq/message"
+	"github.com/578157900/supermq/message"
 )
 
 const (

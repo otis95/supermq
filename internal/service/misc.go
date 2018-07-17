@@ -20,7 +20,7 @@ import (
 	"io"
 	"net"
 
-	"supermq/message"
+	"github.com/578157900/supermq/message"
 )
 
 func getConnectMessage(conn io.Closer) (*message.ConnectMessage, error) {

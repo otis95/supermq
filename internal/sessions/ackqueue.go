@@ -20,7 +20,7 @@ import (
 	"math"
 	"sync"
 
-	"supermq/message"
+	"github.com/578157900/supermq/message"
 )
 
 var (

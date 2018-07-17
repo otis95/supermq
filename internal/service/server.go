@@ -25,13 +25,13 @@ import (
 	"sync/atomic"
 	"time"
 
-	"supermq/internal/auth"
+	"github.com/578157900/supermq/internal/auth"
 
-	"supermq/internal/sessions"
+	"github.com/578157900/supermq/internal/sessions"
 
-	"supermq/message"
+	"github.com/578157900/supermq/message"
 
-	"supermq/internal/topics"
+	"github.com/578157900/supermq/internal/topics"
 
 	glog "github.com/Sirupsen/logrus"
 )
