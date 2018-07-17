@@ -3,7 +3,7 @@ High-Performance MQTT Server and  MQTT cluster
 
 **This project was developed based on surgermq.(https://github.com/surgemq/surgemq)**
 
-**surgemq is not support cluster.So I just did a cluster on his basis. **
+**surgemq is not support cluster.So I just did a cluster on his basis.**
 
 ### MQTT
 

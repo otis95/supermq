@@ -27,8 +27,9 @@ import (
 	"supermq/applog"
 	"supermq/config"
 
+	"supermq/supermq/service"
+
 	log "github.com/Sirupsen/logrus"
-	"github.com/surgemq/surgemq/service"
 	"github.com/urfave/cli"
 )
 
@@ -112,7 +113,7 @@ func run(c *cli.Context) error {
 		}
 		svr.Routes = append(svr.Routes, u)
 	}
-	fmt.Println(conf.RouteModel)
+
 	if conf.RouteModel {
 		go func() {
 			svr.StartRouting(
