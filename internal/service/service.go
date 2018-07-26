@@ -17,6 +17,7 @@ package service
 import (
 	"fmt"
 	"io"
+	"math/rand"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -122,8 +123,13 @@ type service struct {
 	intmp  []byte
 	outtmp []byte
 
-	subs  []interface{}
-	qoss  []byte
+	subs []interface{}
+	qoss []byte
+
+	qsubs []topics.QSub
+
+	prand *rand.Rand
+
 	rmsgs []*message.PublishMessage
 
 	//add lzq

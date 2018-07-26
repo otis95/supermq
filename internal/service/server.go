@@ -117,8 +117,9 @@ type Server struct {
 	// A indicator on whether this server has already checked configuration
 	configOnce sync.Once
 
-	subs []interface{}
-	qoss []byte
+	subs  []interface{}
+	qoss  []byte
+	qsubs []topics.QSub
 
 	//router info. add by lzq
 	route_client  map[uint64]*service
@@ -271,7 +272,7 @@ func (this *Server) Publish(msg *message.PublishMessage, onComplete OnCompleteFu
 		}
 	}
 
-	if err := this.topicsMgr.Subscribers(msg.Topic(), msg.QoS(), &this.subs, &this.qoss); err != nil {
+	if err := this.topicsMgr.Subscribers(msg.Topic(), msg.QoS(), &this.subs, &this.qsubs, &this.qoss); err != nil {
 		return err
 	}
 

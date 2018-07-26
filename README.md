@@ -3,7 +3,7 @@ High-Performance MQTT Server and  MQTT cluster
 
 **This project was developed based on surgermq.(https://github.com/surgemq/surgemq)**
 
-**surgemq is not support cluster.So I just did a cluster on his basis.**
+**surgemq is not support cluster and consumer group.**
 
 ### MQTT
 
@@ -40,10 +40,20 @@ Because I don't have experience to develop message queue cluster, so I refer to 
 
 ![Image](https://raw.githubusercontent.com/578157900/supermq/master/images/router.png)
 
+### Queue
+
+Consumer group.MQTT clients subscribe a regular topic,just one client will receive message in random.
+
+**Architecture diagram**
+
+![Image](https://raw.githubusercontent.com/578157900/supermq/master/images/queue.jpg)
+
 **Focus**
 
 * Clusters use qos 0 when they publish and subscribe topic.I think too much shake hands will reduce the performance of server.
 * Clusters's connections is not supported TLS and SSL now.
+* '*' and '+' are allowed in queue name. Queue name's length < 10.Example: $g/:name/xxxxx/xxxx  name is '**123++' is ok.
+* Queue is not been supported in mqtt cluster.
 
 ### Examples
 

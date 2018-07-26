@@ -15,6 +15,7 @@
 package topics
 
 import (
+	"bytes"
 	"fmt"
 	"reflect"
 	"sync"
@@ -59,6 +60,50 @@ func NewMemProvider() *memTopics {
 	}
 }
 
+//** write by lumore
+//   queue topic : $g/:name/xxxx/xxxx
+//   example: $g/lumore/abc/+/abc => queue:lumore  topic: abc/+/abc
+//   focus: 1).queue name's length < 10  2).'*' and '+' are allowed in queue name
+
+func GetQueue(topic []byte) ([]byte, []byte) {
+
+	isgroup := false
+
+	for i, c := range topic {
+		switch c {
+		case '/':
+			if i == 0 || i == 1 {
+				goto exit
+			}
+			if i == 2 {
+				isgroup = true
+				break
+			}
+			if isgroup && i != 3 && len(topic) > i+1 {
+				return topic[3:i], topic[i+1:]
+			} else {
+				goto exit
+			}
+		case '$':
+			if i != 0 {
+				goto exit
+			}
+		case 'g':
+			if i != 1 && !isgroup {
+				goto exit
+			}
+		default:
+			//queue name length can't more than 10
+			if i < 3 || (isgroup && (i-2 > 10)) {
+				goto exit
+			}
+		}
+	}
+
+exit:
+	return nil, topic
+}
+
 func (this *memTopics) Subscribe(topic []byte, qos byte, sub interface{}) (byte, error) {
 	if !message.ValidQos(qos) {
 		return message.QosFailure, fmt.Errorf("Invalid QoS %d", qos)
@@ -75,7 +120,11 @@ func (this *memTopics) Subscribe(topic []byte, qos byte, sub interface{}) (byte,
 		qos = MinQosAllowed
 	}
 
-	if err := this.sroot.sinsert(topic, qos, sub); err != nil {
+	var queue []byte
+
+	queue, topic = GetQueue(topic)
+
+	if err := this.sroot.sinsert(topic, queue, qos, sub); err != nil {
 		return message.QosFailure, err
 	}
 
@@ -86,11 +135,15 @@ func (this *memTopics) Unsubscribe(topic []byte, sub interface{}) error {
 	this.smu.Lock()
 	defer this.smu.Unlock()
 
-	return this.sroot.sremove(topic, sub)
+	var queue []byte
+
+	queue, topic = GetQueue(topic)
+
+	return this.sroot.sremove(topic, queue, sub)
 }
 
 // Returned values will be invalidated by the next Subscribers call
-func (this *memTopics) Subscribers(topic []byte, qos byte, subs *[]interface{}, qoss *[]byte) error {
+func (this *memTopics) Subscribers(topic []byte, qos byte, subs *[]interface{}, qsubs *[]QSub, qoss *[]byte) error {
 	if !message.ValidQos(qos) {
 		return fmt.Errorf("Invalid QoS %d", qos)
 	}
@@ -100,8 +153,9 @@ func (this *memTopics) Subscribers(topic []byte, qos byte, subs *[]interface{}, 
 
 	*subs = (*subs)[0:0]
 	*qoss = (*qoss)[0:0]
+	*qsubs = (*qsubs)[0:0]
 
-	return this.sroot.smatch(topic, qos, subs, qoss)
+	return this.sroot.smatch(topic, qos, subs, qsubs, qoss)
 }
 
 func (this *memTopics) Retain(msg *message.PublishMessage) error {
@@ -137,11 +191,21 @@ func (this *memTopics) Close() error {
 	return nil
 }
 
+type QSub struct {
+	Sub []interface{}
+
+	Queue []byte
+
+	Qos []byte
+}
+
 // subscrition nodes
 type snode struct {
 	// If this is the end of the topic string, then add subscribers here
 	subs []interface{}
 	qos  []byte
+
+	qsubs []QSub
 
 	// Otherwise add the next topic level here
 	snodes map[string]*snode
@@ -153,7 +217,7 @@ func newSNode() *snode {
 	}
 }
 
-//获取所有的topic  write by lzq
+//获取所有的topic  write by lumore
 func (this *snode) stopic() []string {
 	topics := make([]string, 0)
 	for t, node := range this.snodes {
@@ -170,23 +234,49 @@ func (this *snode) stopic() []string {
 	return topics
 }
 
-func (this *snode) sinsert(topic []byte, qos byte, sub interface{}) error {
+func (this *snode) sinsert(topic []byte, queue []byte, qos byte, sub interface{}) error {
 	// If there's no more topic levels, that means we are at the matching snode
 	// to insert the subscriber. So let's see if there's such subscriber,
 	// if so, update it. Otherwise insert it.
 	if len(topic) == 0 {
 		// Let's see if the subscriber is already on the list. If yes, update
 		// QoS and then return.
-		for i := range this.subs {
-			if equal(this.subs[i], sub) {
-				this.qos[i] = qos
-				return nil
+		if queue == nil {
+			for i := range this.subs {
+				if equal(this.subs[i], sub) {
+					this.qos[i] = qos
+					return nil
+				}
 			}
-		}
 
-		// Otherwise add.
-		this.subs = append(this.subs, sub)
-		this.qos = append(this.qos, qos)
+			// Otherwise add.
+			this.subs = append(this.subs, sub)
+			this.qos = append(this.qos, qos)
+
+		} else {
+			var isfind bool
+
+			for i, qr := range this.qsubs {
+				if bytes.Equal(qr.Queue, queue) {
+					isfind = true
+					this.qsubs[i].Sub = append(this.qsubs[i].Sub, sub)
+					this.qsubs[i].Qos = append(this.qsubs[i].Qos, qos)
+					break
+				}
+			}
+			if !isfind {
+				qr := QSub{
+					Queue: queue,
+					Sub:   make([]interface{}, 0),
+					Qos:   make([]byte, 0),
+				}
+				qr.Sub = append(qr.Sub, sub)
+				qr.Qos = append(qr.Qos, qos)
+
+				this.qsubs = append(this.qsubs, qr)
+			}
+
+		}
 
 		return nil
 	}
@@ -209,12 +299,12 @@ func (this *snode) sinsert(topic []byte, qos byte, sub interface{}) error {
 		this.snodes[level] = n
 	}
 
-	return n.sinsert(rem, qos, sub)
+	return n.sinsert(rem, queue, qos, sub)
 }
 
 // This remove implementation ignores the QoS, as long as the subscriber
 // matches then it's removed
-func (this *snode) sremove(topic []byte, sub interface{}) error {
+func (this *snode) sremove(topic []byte, queue []byte, sub interface{}) error {
 	// If the topic is empty, it means we are at the final matching snode. If so,
 	// let's find the matching subscribers and remove them.
 	if len(topic) == 0 {
@@ -227,11 +317,30 @@ func (this *snode) sremove(topic []byte, sub interface{}) error {
 
 		// If we find the subscriber then remove it from the list. Technically
 		// we just overwrite the slot by shifting all other items up by one.
-		for i := range this.subs {
-			if equal(this.subs[i], sub) {
-				this.subs = append(this.subs[:i], this.subs[i+1:]...)
-				this.qos = append(this.qos[:i], this.qos[i+1:]...)
-				return nil
+
+		//** modify by lumore
+		if queue == nil {
+			for i := range this.subs {
+				if equal(this.subs[i], sub) {
+					this.subs = append(this.subs[:i], this.subs[i+1:]...)
+					this.qos = append(this.qos[:i], this.qos[i+1:]...)
+					return nil
+				}
+			}
+		} else {
+			for j := range this.qsubs {
+				if bytes.Equal(this.qsubs[j].Queue, queue) {
+					for i := range this.qsubs[j].Sub {
+						if equal(this.qsubs[j].Sub[i], sub) {
+							this.qsubs[j].Sub = append(this.qsubs[j].Sub[:i], this.qsubs[j].Sub[i+1:]...)
+							this.qsubs[j].Qos = append(this.qsubs[j].Qos[:i], this.qsubs[j].Qos[i+1:]...)
+							if len(this.qsubs[j].Sub) == 0 {
+								this.qsubs = append(this.qsubs[:j], this.qsubs[j+1:]...)
+							}
+							return nil
+						}
+					}
+				}
 			}
 		}
 
@@ -256,13 +365,13 @@ func (this *snode) sremove(topic []byte, sub interface{}) error {
 	}
 
 	// Remove the subscriber from the next level snode
-	if err := n.sremove(rem, sub); err != nil {
+	if err := n.sremove(rem, queue, sub); err != nil {
 		return err
 	}
 
 	// If there are no more subscribers and snodes to the next level we just visited
 	// let's remove it
-	if len(n.subs) == 0 && len(n.snodes) == 0 {
+	if len(n.subs) == 0 && len(n.snodes) == 0 && len(n.qsubs) == 0 {
 		delete(this.snodes, level)
 	}
 
@@ -273,11 +382,11 @@ func (this *snode) sremove(topic []byte, sub interface{}) error {
 // with no wildcards (publish topic), it returns a list of subscribers that subscribes
 // to the topic. For each of the level names, it's a match
 // - if there are subscribers to '#', then all the subscribers are added to result set
-func (this *snode) smatch(topic []byte, qos byte, subs *[]interface{}, qoss *[]byte) error {
+func (this *snode) smatch(topic []byte, qos byte, subs *[]interface{}, qsubs *[]QSub, qoss *[]byte) error {
 	// If the topic is empty, it means we are at the final matching snode. If so,
 	// let's find the subscribers that match the qos and append them to the list.
 	if len(topic) == 0 {
-		this.matchQos(qos, subs, qoss)
+		this.matchQos(qos, subs, qsubs, qoss)
 		return nil
 	}
 
@@ -292,9 +401,9 @@ func (this *snode) smatch(topic []byte, qos byte, subs *[]interface{}, qoss *[]b
 	for k, n := range this.snodes {
 		// If the key is "#", then these subscribers are added to the result set
 		if k == MWC {
-			n.matchQos(qos, subs, qoss)
+			n.matchQos(qos, subs, qsubs, qoss)
 		} else if k == SWC || k == level {
-			if err := n.smatch(rem, qos, subs, qoss); err != nil {
+			if err := n.smatch(rem, qos, subs, qsubs, qoss); err != nil {
 				return err
 			}
 		}
@@ -531,7 +640,7 @@ func nextTopicLevel(topic []byte) ([]byte, []byte, error) {
 // due to the QoS granted is lower than the published message QoS. For example,
 // if the client is granted only QoS 0, and the publish message is QoS 1, then this
 // client is not to be send the published message.
-func (this *snode) matchQos(qos byte, subs *[]interface{}, qoss *[]byte) {
+func (this *snode) matchQos(qos byte, subs *[]interface{}, qsubs *[]QSub, qoss *[]byte) {
 	for i, sub := range this.subs {
 		// If the published QoS is higher than the subscriber QoS, then we skip the
 		// subscriber. Otherwise, add to the list.
@@ -540,6 +649,30 @@ func (this *snode) matchQos(qos byte, subs *[]interface{}, qoss *[]byte) {
 			*qoss = append(*qoss, qos)
 		}
 	}
+
+	for _, qr := range this.qsubs {
+		if len(qr.Sub) == 0 {
+			continue
+		}
+		// Need to find matching list in results
+		if i := findQSliceForSub(qr, *qsubs); i >= 0 {
+			(*qsubs)[i].Sub = append((*qsubs)[i].Sub, qr.Sub...)
+		} else {
+			*qsubs = append(*qsubs, qr)
+		}
+	}
+}
+
+func findQSliceForSub(qsub QSub, qsl []QSub) int {
+	if qsub.Queue == nil {
+		return -1
+	}
+	for i, qr := range qsl {
+		if len(qr.Sub) > 0 && bytes.Equal(qsub.Queue, qr.Queue) {
+			return i
+		}
+	}
+	return -1
 }
 
 func equal(k1, k2 interface{}) bool {

@@ -19,12 +19,14 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math/rand"
 	"net/url"
 	"reflect"
-
-	"github.com/578157900/supermq/message"
+	"time"
 
 	"github.com/578157900/supermq/internal/sessions"
+	"github.com/578157900/supermq/internal/topics"
+	"github.com/578157900/supermq/message"
 
 	glog "github.com/Sirupsen/logrus"
 )
@@ -151,18 +153,16 @@ func (this *service) processIncoming(msg message.Message) error {
 		// For SUBSCRIBE message, we should add subscriber, then send back SUBACK
 		//如果client不是集群的client
 		if this.route == nil && this.server.routeInfo.ID != "" {
-			this.server.mu.Lock()
-			for _, route := range this.server.route_client {
-				route.writeMessage(msg)
-			}
-			this.server.mu.Unlock()
+			defer this.WriteMsgToRoute(msg)
 		}
+
 		if this.route != nil {
 			glog.Info("Receive router subcribe for ", msg.String())
 			return this.processRouterSubscribe(msg)
 		} else {
 			return this.processSubscribe(msg)
 		}
+
 	case *message.SubackMessage:
 		// For SUBACK message, we should send to ack queue
 		this.sess.Suback.Ack(msg)
@@ -170,16 +170,13 @@ func (this *service) processIncoming(msg message.Message) error {
 
 	case *message.UnsubscribeMessage:
 		// For UNSUBSCRIBE message, we should remove subscriber, then send back UNSUBACK
+		if this.route == nil && this.server.routeInfo.ID != "" {
+			defer this.WriteMsgToRoute(msg)
+		}
 
 		if this.route != nil {
 			return this.processRouterUnsubscribe(msg)
 		} else {
-			this.server.mu.Lock()
-			for _, route := range this.server.route_client {
-				route.writeMessage(msg)
-			}
-			this.server.mu.Unlock()
-
 			return this.processUnsubscribe(msg)
 		}
 	case *message.UnsubackMessage:
@@ -211,6 +208,44 @@ func (this *service) processIncoming(msg message.Message) error {
 		glog.Debugf("(%s) Error processing acked message: %v", this.cid(), err)
 	}
 	return err
+}
+
+func (this *service) WriteMsgToRoute(msg message.Message) {
+
+	//mqtt cluster is not support queue topic
+
+	switch msg := msg.(type) {
+	case *message.SubscribeMessage:
+		ts := msg.Topics()
+		for _, t := range ts {
+			queue, _ := topics.GetQueue(t)
+			if queue != nil {
+				msg.RemoveTopic(t)
+			}
+		}
+		if len(msg.Topics()) == 0 {
+			return
+		}
+	case *message.UnsubscribeMessage:
+		ts := msg.Topics()
+		for _, t := range ts {
+			queue, _ := topics.GetQueue(t)
+			if queue != nil {
+				msg.RemoveTopic(t)
+			}
+		}
+		if len(msg.Topics()) == 0 {
+			return
+		}
+	}
+
+	this.server.mu.Lock()
+
+	for _, route := range this.server.route_client {
+		route.writeMessage(msg)
+	}
+
+	this.server.mu.Unlock()
 }
 
 func (this *service) processRouteInfo(msg *message.RouteMessage) error {
@@ -507,7 +542,7 @@ func (this *service) onPublish(msg *message.PublishMessage) error {
 		}
 	}
 
-	err := this.topicsMgr.Subscribers(msg.Topic(), msg.QoS(), &this.subs, &this.qoss)
+	err := this.topicsMgr.Subscribers(msg.Topic(), msg.QoS(), &this.subs, &this.qsubs, &this.qoss)
 	if err != nil {
 		glog.Errorf("(%s) Error retrieving subscribers list: %v", this.cid(), err)
 		return err
@@ -528,6 +563,28 @@ func (this *service) onPublish(msg *message.PublishMessage) error {
 					(*fn)(msg, false)
 				} else {
 					(*fn)(msg, true)
+				}
+			}
+		}
+	}
+
+	// cluster is not support queue topic
+	if this.route == nil {
+
+		if this.prand == nil {
+			this.prand = rand.New(rand.NewSource(time.Now().UnixNano()))
+		}
+		for _, qr := range this.qsubs {
+			index := this.prand.Intn(len(qr.Sub))
+			sub := qr.Sub[index]
+			//qos := qr.Qos[index]
+			if sub != nil {
+				fn, ok := sub.(*OnPublishFunc)
+				if !ok {
+					glog.Errorf("Invalid onPublish Function")
+					return fmt.Errorf("Invalid onPublish Function")
+				} else {
+					(*fn)(msg, false)
 				}
 			}
 		}

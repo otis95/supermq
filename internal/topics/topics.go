@@ -61,7 +61,7 @@ var (
 type TopicsProvider interface {
 	Subscribe(topic []byte, qos byte, subscriber interface{}) (byte, error)
 	Unsubscribe(topic []byte, subscriber interface{}) error
-	Subscribers(topic []byte, qos byte, subs *[]interface{}, qoss *[]byte) error
+	Subscribers(topic []byte, qos byte, subs *[]interface{}, qsubs *[]QSub, qoss *[]byte) error
 	Retain(msg *message.PublishMessage) error
 	Retained(topic []byte, msgs *[]*message.PublishMessage) error
 	Topics() []string
@@ -105,8 +105,8 @@ func (this *Manager) Unsubscribe(topic []byte, subscriber interface{}) error {
 	return this.p.Unsubscribe(topic, subscriber)
 }
 
-func (this *Manager) Subscribers(topic []byte, qos byte, subs *[]interface{}, qoss *[]byte) error {
-	return this.p.Subscribers(topic, qos, subs, qoss)
+func (this *Manager) Subscribers(topic []byte, qos byte, subs *[]interface{}, qsubs *[]QSub, qoss *[]byte) error {
+	return this.p.Subscribers(topic, qos, subs, qsubs, qoss)
 }
 
 func (this *Manager) Retain(msg *message.PublishMessage) error {
