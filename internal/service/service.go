@@ -135,9 +135,9 @@ type service struct {
 	//add lzq
 	server *Server
 	route  *route
-	//router 订阅的topic router不存在session
+	// router with topic no session
 	topics map[string]struct{}
-	//心跳计时
+	//heatbeat timer
 	ptmr *time.Timer
 	mu   sync.Mutex
 }

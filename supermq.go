@@ -106,15 +106,18 @@ func run(c *cli.Context) error {
 		SessionsProvider: sessionsProvider,
 		TopicsProvider:   topicsProvider,
 	}
-	for _, s := range conf.Routes {
-		u, err := url.Parse(s)
-		if err != nil {
-			panic(err)
-		}
-		svr.Routes = append(svr.Routes, u)
-	}
 
+	//router model
 	if conf.RouteModel {
+
+		for _, s := range conf.Routes {
+			u, err := url.Parse(s)
+			if err != nil {
+				panic(err)
+			}
+			svr.Routes = append(svr.Routes, u)
+		}
+
 		go func() {
 			svr.StartRouting(
 				service.Info{
@@ -134,6 +137,9 @@ func run(c *cli.Context) error {
 		}
 	}()
 
+	// start api server
+	go service.StartHTTPServer(svr, conf.WebServer)
+
 	wsAddr := conf.WSMQTTServer
 	wssAddr := conf.WSSMQTTServer
 	wssCertPath := conf.CertPath
@@ -142,6 +148,7 @@ func run(c *cli.Context) error {
 	log.Info("wssAddr = ", wssAddr)
 	log.Info("wssCertPath = ", wssCertPath)
 	log.Info("wssKeyPath = ", wssKeyPath)
+
 	// create websocket mqtt server
 	if len(wsAddr) > 0 || len(wssAddr) > 0 {
 		addr := conf.MQTTServer
@@ -161,7 +168,7 @@ func run(c *cli.Context) error {
 	if err = svr.Close(); err != nil {
 		log.Error("Couldn't shutdown server", err)
 	}
-	//集群关闭
+
 	return nil
 }
 

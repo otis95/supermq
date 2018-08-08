@@ -121,7 +121,7 @@ type Server struct {
 	qoss  []byte
 	qsubs []topics.QSub
 
-	//router info. add by lzq
+	//router info add by lumore
 	route_client  map[uint64]*service
 	routeListener net.Listener
 	routes        map[string]*route //存储route client
