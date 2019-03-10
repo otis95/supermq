@@ -210,7 +210,6 @@ func main() {
 		cli.StringFlag{
 			Name:   "conf,c",
 			Usage:  "Set conf path here",
-			Value:  "appserver.conf",
 			EnvVar: "APP_CONF",
 		},
 	}

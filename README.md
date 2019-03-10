@@ -62,11 +62,18 @@ Consumer group.MQTT clients subscribe a regular topic,just one client will recei
 **Start**
 
 ```
-  git clone https://github.com/578157900/supermq
+  1.
+    go get github.com/578157900/supermq
 
-  go  build 
+    cd $GOPATH/src/github.com/578157900/supermq
 
-  supermq -c appserver.conf
+    go  build 
+
+    supermq -c appserver.conf
+  
+  2. 
+    # run in docker 
+    ./docker.sh
 ```
 
 **Result**

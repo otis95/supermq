@@ -2,6 +2,9 @@ package config
 
 import (
 	"fmt"
+	"os"
+	"strconv"
+	"strings"
 
 	log "github.com/Sirupsen/logrus"
 	"gopkg.in/ini.v1"
@@ -14,6 +17,44 @@ import (
 //web_server = 0.0.0.0:11883
 //cert_path = certs/michael.crt
 //key_path = certs/michael.key
+
+var envConfig Config
+
+func init() {
+	envConfig.MQTTServer = os.Getenv("MQTT_SERVER")
+	envConfig.WSMQTTServer = os.Getenv("WS_MQTT_SERVER")
+	envConfig.WSSMQTTServer = os.Getenv("WSS_MQTT_SERVER")
+	envConfig.WebServer = os.Getenv("WEB_SERVER")
+	envConfig.CertPath = os.Getenv("CERT_PATH")
+	envConfig.KeyPath = os.Getenv("KEY_PATH")
+
+	envConfig.LogLevel = os.Getenv("LOG_LEVEL")
+	envConfig.LogDirWin = os.Getenv("LOG_DIR_WIN")
+	envConfig.LogDirLinux = os.Getenv("LOG_DIR_LINUX")
+	envConfig.LogPrefix = os.Getenv("LOG_PREFIX")
+	if logToFile, err := strconv.ParseBool(os.Getenv("LOG_TO_FILE")); err != nil {
+		envConfig.LogToFile = false
+	} else {
+		envConfig.LogToFile = logToFile
+	}
+
+	envConfig.RouteId = os.Getenv("ROUTE_ID")
+	envConfig.Host = os.Getenv("HOST")
+	envConfig.Ip = os.Getenv("IP")
+	if routeModel, err := strconv.ParseBool(os.Getenv("ROUTE_MODEL")); err != nil {
+		envConfig.RouteModel = false
+	} else {
+		envConfig.RouteModel = routeModel
+	}
+	if port, err := strconv.Atoi(os.Getenv("PORT")); err != nil {
+		envConfig.Port = 10000
+	} else {
+		envConfig.Port = port
+	}
+	if routes := strings.Split(os.Getenv("ROUTES"), ","); len(routes) != 0 {
+		envConfig.Routes = routes
+	}
+}
 
 type Config struct {
 	//MQTT
@@ -49,8 +90,12 @@ func (c Config) String() string {
 	return mqtt1 + ", " + mqtt2 + ", " + mqtt3 + ", " + log
 }
 
-//Read Server's Config Value from "path"
 func ReadConfig(path string) (Config, error) {
+	// read config from env.
+	if path == "" {
+		return envConfig, nil
+	}
+
 	var config Config
 	conf, err := ini.Load(path)
 	if err != nil {
