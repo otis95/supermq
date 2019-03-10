@@ -62,18 +62,24 @@ Consumer group.MQTT clients subscribe a regular topic,just one client will recei
 **Start**
 
 ```
-  1.
-    go get github.com/578157900/supermq
+  1. Run by binary file
+    
+      go get github.com/578157900/supermq
 
-    cd $GOPATH/src/github.com/578157900/supermq
+      cd $GOPATH/src/github.com/578157900/supermq
 
-    go  build 
+      go  build 
 
-    supermq -c appserver.conf
+      supermq -c appserver.conf
   
-  2. 
-    # run in docker 
-    ./docker.sh
+  2. Run by docker <standalone> 
+    
+      ./docker.sh
+
+  3. Start supermq cluster fastly by docker compose <cluster>
+    
+      docker-compose -f docker-compose-cluster.yaml up -d 
+
 ```
 
 **Result**

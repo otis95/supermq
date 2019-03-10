@@ -1,0 +1,91 @@
+version: "3.2"
+services:
+  1st_supermq:
+    image: lumorechn/supermq:0.0.1
+    network_mode: bridge
+    # ports:
+    #   - "1883:1883"
+    #   - "8083:8083"
+    #   - "8084:8084"
+    #   - "11883:11883"
+    environment:
+    # - constraint:container!=*_supermq
+      - MQTT_SERVER=$MQTT_SERVER
+      - WS_MQTT_SERVER=$WS_MQTT_SERVER
+      - WSS_MQTT_SERVER=$WSS_MQTT_SERVER
+      - WEB_SERVER=$WEB_SERVER 
+      - CERT_PATH=$CERT_PATH
+      - KEY_PATH=$KEY_PATH
+      - LOG_LEVEL=$LOG_LEVEL 
+      - LOG_DIR_LINUX=$LOG_DIR_LINUX
+      - LOG_PREFIX=$LOG_PREFIX 
+      - LOG_TO_FILE=$LOG_TO_FILE 
+      - ROUTE_MODEL=true
+      - ROUTE_ID=1st_supermq
+      - HOST=$HOST
+      - IP=1st_supermq
+      - PORT=$PORT
+
+  2nd_supermq:
+    image: lumorechn/supermq:0.0.1
+    network_mode: bridge
+    # ports:
+    #   - "1883:1883"
+    #   - "8083:8083"
+    #   - "8084:8084"
+    #   - "11883:11883"
+    environment:
+    # - constraint:container!=*_supermq
+      - MQTT_SERVER=$MQTT_SERVER
+      - WS_MQTT_SERVER=$WS_MQTT_SERVER
+      - WSS_MQTT_SERVER=$WSS_MQTT_SERVER
+      - WEB_SERVER=$WEB_SERVER 
+      - CERT_PATH=$CERT_PATH
+      - KEY_PATH=$KEY_PATH
+      - LOG_LEVEL=$LOG_LEVEL 
+      - LOG_DIR_LINUX=$LOG_DIR_LINUX
+      - LOG_PREFIX=$LOG_PREFIX 
+      - LOG_TO_FILE=$LOG_TO_FILE 
+      - ROUTE_MODEL=true
+      - ROUTE_ID=2nd_supermq
+      - HOST=$HOST
+      - IP=2nd_supermq
+      - PORT=$PORT
+      - ROUTES=tcp://1st_supermq:$PORT
+    links:
+      - 1st_supermq
+    depends_on:
+      - 1st_supermq
+
+  3rd_supermq:
+    image: lumorechn/supermq:0.0.1
+    network_mode: bridge
+    # ports:
+    #   - "1883:1883"
+    #   - "8083:8083"
+    #   - "8084:8084"
+    #   - "11883:11883"
+    environment:
+    # - constraint:container!=*_supermq
+      - MQTT_SERVER=$MQTT_SERVER
+      - WS_MQTT_SERVER=$WS_MQTT_SERVER
+      - WSS_MQTT_SERVER=$WSS_MQTT_SERVER
+      - WEB_SERVER=$WEB_SERVER 
+      - CERT_PATH=$CERT_PATH
+      - KEY_PATH=$KEY_PATH
+      - LOG_LEVEL=$LOG_LEVEL 
+      - LOG_DIR_LINUX=$LOG_DIR_LINUX
+      - LOG_PREFIX=$LOG_PREFIX 
+      - LOG_TO_FILE=$LOG_TO_FILE 
+      - ROUTE_MODEL=true
+      - ROUTE_ID=3rd_supermq
+      - HOST=$HOST
+      - IP=3rd_supermq
+      - PORT=$PORT
+      - ROUTES=tcp://1st_supermq:$PORT,tcp://2nd_supermq:$PORT
+    links:
+      - 1st_supermq
+      - 2nd_supermq
+    depends_on:
+      - 1st_supermq
+      - 2nd_supermq

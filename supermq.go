@@ -109,8 +109,10 @@ func run(c *cli.Context) error {
 
 	//router model
 	if conf.RouteModel {
-
 		for _, s := range conf.Routes {
+			if s == "" {
+				continue
+			}
 			u, err := url.Parse(s)
 			if err != nil {
 				panic(err)
@@ -119,6 +121,7 @@ func run(c *cli.Context) error {
 		}
 
 		go func() {
+			log.Infof("supermq cluster starting! And cluster routers size: %d", len(svr.Routes))
 			svr.StartRouting(
 				service.Info{
 					ID:   conf.RouteId,
