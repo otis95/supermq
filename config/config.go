@@ -24,6 +24,8 @@ type Config struct {
 	WebServer     string `ini:"web_server"`
 	CertPath      string `ini:"cert_path"`
 	KeyPath       string `ini:"key_path"`
+	Username      string `ini:"username"`
+	Password      string `ini:"password"`
 
 	LogLevel    string `ini:"log_level"`
 	LogDirWin   string `ini:"log_dir_win"`

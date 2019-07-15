@@ -16,8 +16,10 @@ package main
 
 import (
 	"fmt"
+	"github.com/578157900/supermq/internal/auth"
 	"net/url"
 	"os"
+	"os/exec"
 	"os/signal"
 	"path"
 	"runtime"
@@ -105,6 +107,11 @@ func run(c *cli.Context) error {
 		TimeoutRetries:   timeoutRetries,
 		SessionsProvider: sessionsProvider,
 		TopicsProvider:   topicsProvider,
+	}
+
+	if conf.Username != "" && conf.Password != "" {
+		auth.RegisterBasicAuth(conf.Username, conf.Password)
+		svr.Authenticator = "basic"
 	}
 
 	//router model
@@ -200,6 +207,13 @@ func (hook ContextHook) Fire(entry *log.Entry) error {
 
 func main() {
 	//log.AddHook(ContextHook{})
+	//runtime.GOMAXPROCS(8)
+	{
+		file, _ := exec.LookPath(os.Args[0]) // [1]
+		dir, _ := path.Split(file)           // [2]
+		os.Chdir(dir)                        // [3] 更新当前工作目录(darwin/linux)
+	}
+
 	app := cli.NewApp()
 	app.Name = "surpermq"
 	app.Usage = "surpermq: mqtt server"
