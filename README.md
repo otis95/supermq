@@ -65,10 +65,14 @@ Consumer group.MQTT clients subscribe a regular topic,just one client will recei
   1. Run by binary file
     
       go get github.com/578157900/supermq
-
+      
       cd $GOPATH/src/github.com/578157900/supermq
 
-      go  build 
+      # go version > go1.11
+      export GOPROXY=https://goproxy.cn
+      export GO111MODULE=on
+
+      go build 
 
       supermq -c appserver.conf
   
