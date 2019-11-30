@@ -1,1 +1,0 @@
-Websocket support has been tested with the HiveMQ websocket client at http://www.hivemq.com/demos/websocket-client/
