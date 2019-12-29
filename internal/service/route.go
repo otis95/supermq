@@ -395,7 +395,7 @@ func getClientConnectURLs(host string, port int) []string {
 		// ended-up returning 0.0.0.0, which is problematic for Windows clients.
 		// Check for 0.0.0.0 or :: specifically, and ignore if that's the case.
 		if host == "0.0.0.0" || host == "::" {
-			fmt.Println("Address %q can not be resolved properly", host)
+			fmt.Printf("Address %q can not be resolved properly\n", host)
 		} else {
 			urls = append(urls, net.JoinHostPort(host, sPort))
 		}
