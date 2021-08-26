@@ -112,15 +112,17 @@ func (this *buffer) ID() int64 {
 }
 
 func (this *buffer) Close() error {
-	atomic.StoreInt64(&this.done, 1)
+	if !atomic.CompareAndSwapInt64(&this.done, 0, 1) {
+		return nil
+	}
 
 	this.pcond.L.Lock()
 	this.pcond.Broadcast()
 	this.pcond.L.Unlock()
 
-	this.pcond.L.Lock()
+	this.ccond.L.Lock()
 	this.ccond.Broadcast()
-	this.pcond.L.Unlock()
+	this.ccond.L.Unlock()
 
 	return nil
 }
